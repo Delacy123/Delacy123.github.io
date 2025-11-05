@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>青旅行迹 - AI智能规划+绿色旅行平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+        .section-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        .badge-green {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- 头部横幅 -->
+    <header class="relative py-20 px-4 md:px-8 overflow-hidden">
+        <div class="absolute inset-0 bg-black/30 z-0"></div>
+        <div class="absolute inset-0 bg-[url('https://picsum.photos/id/1039/1920/1080')] bg-cover bg-center opacity-40 z-[-1]"></div>
+        <div class="container mx-auto relative z-10 text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg">青旅行迹</h1>
+            <p class="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto mb-8">AI智能规划 · 游戏化激励 · 一站式绿色旅行</p >
+            <!-- 核心入口：AI规划 + 发现灵感 -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+                <button class="btn-primary text-white font-medium py-3 px-8 rounded-full">
+                    🔍 进入AI智能规划
+                </button>
+                <button class="bg-white/10 text-white font-medium py-3 px-8 rounded-full border border-white/20 hover:bg-white/20 transition">
+                    📖 发现灵感游记
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 核心内容区 -->
+    <main class="container mx-auto px-4 md:px-8 py-12">
+        <!-- 引言部分 -->
+        <section class="mb-16 text-center max-w-4xl mx-auto">
+            <p class="text-lg md:text-xl text-gray-200">
+                告别信息爆炸的规划焦虑，青旅行迹用AI为你定制个性化行程，用低碳激励让旅行更有意义——从想法到出发，一站式搞定。
+            </p >
+        </section>
+
+        <!-- 第一阶段：AI规划流程 -->
+        <section class="mb-16 section-card rounded-2xl p-6 md:p-8">
+            <h2 class="text-3xl font-bold mb-8 text-emerald-400 border-b border-emerald-400/30 pb-2">AI智能规划：3步定制专属行程</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- 步骤1：需求输入 -->
+                <div class="bg-black/20 rounded-xl p-6">
+                    <div class="w-16 h-16 bg-emerald-400/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <span class="text-2xl font-bold text-emerald-400">1</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4 text-white text-center">需求输入</h3>
+                    <ul class="text-gray-300 space-y-2">
+                        <li>• 选择「智能规划」，进入对话界面</li>
+                        <li>• 输入基础需求：目的地、时间、预算、兴趣（如“周末和女友去上海，2天1夜，预算3000，喜欢拍照咖啡”）</li>
+                        <li>• AI精细化追问：偏好风格（网红/小众/经典）、住宿需求（民宿/酒店）</li>
+                    </ul>
+                </div>
+
+                <!-- 步骤2：方案生成与打磨 -->
+                <div class="bg-black/20 rounded-xl p-6">
+                    <div class="w-16 h-16 bg-emerald-400/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <span class="text-2xl font-bold text-emerald-400">2</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4 text-white text-center">方案生成与打磨</h3>
+                    <ul class="text-gray-300 space-y-2">
+                        <li>• 10秒内生成2套可视方案（如“文艺漫游”vs“经典打卡”）</li>
+                        <li>• 地图点选查看详情：评分、实拍图、网友避坑提示</li>
+                        <li>• 灵活调整：拖拽排序、一键替换同类型备选、智能填充空白时段</li>
+                    </ul>
+                </div>
+
+                <!-- 步骤3：确认与预订 -->
+                <div class="bg-black/20 rounded-xl p-6">
+                    <div class="w-16 h-16 bg-emerald-400/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <span class="text-2xl font-bold text-emerald-400">3</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4 text-white text-center">确认与预订</h3>
+                    <ul class="text-gray-300 space-y-2">
+                        <li>• 查看行程总览：预算分解、时间轴、路线图、预估碳足迹</li>
+                        <li>• 一站式预订：酒店/机票旁直接点击“预订”，内嵌H5完成流程</li>
+                        <li>• 青旅币抵扣：支付时自动显示可抵扣金额（1青旅币=0.01元）</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 方案示例预览 -->
+            <div class="mt-12 bg-black/30 rounded-xl p-6 border border-emerald-400/20">
+                <h3 class="text-xl font-semibold mb-4 text-white">上海2天1夜方案示例（文艺漫游版）</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-gray-300 mb-3"><strong class="text-emerald-400">Day1：文艺咖啡馆+小众街区</strong></p >
+                        <ul class="text-gray-300 space-y-1 text-sm">
+                            <li>• 10:00 入住「武康路设计民宿」（步行5分钟到武康大楼）</li>
+                            <li>• 11:00 武康大楼拍照打卡（AI推荐最佳机位）</li>
+                            <li>• 12:30 「M Stand」咖啡简餐（网红工业风，适合拍照）</li>
+                            <li>• 14:00 愚园路逛小众文创店+街头艺术展</li>
+                            <li>• 18:30 「Baker&Spice」晚餐（轻食，露台夜景佳）</li>
+                        </ul>
+                        <p class="text-gray-300 mb-3 mt-6"><strong class="text-emerald-400">Day2：美术馆+滨江漫步</strong></p >
+                        <ul class="text-gray-300 space-y-1 text-sm">
+                            <li>• 9:30 「龙美术馆（西岸馆）」看展（工业风建筑，江边景观）</li>
+                            <li>• 12:00 「西岸美术馆食堂」午餐（平价艺术感餐厅）</li>
+                            <li>• 14:00 西岸滨江步道散步（骑行/拍照均可）</li>
+                            <li>• 16:30 「Seesaw Coffee」喝手冲（滨江分店，视野好）</li>
+                            <li>• 18:00 返程</li>
+                        </ul>
+                    </div>
+                    <div class="bg-black/40 rounded-lg p-4 flex items-center justify-center">
+                        < img src="https://picsum.photos/id/1067/600/400" alt="上海文艺路线地图" class="rounded-lg w-full h-auto opacity-80">
+                        <div class="absolute text-sm text-white bg-black/50 px-2 py-1 rounded">
+                            点击地图点位查看详情（如民宿设施、餐厅评价）
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第二阶段：行中执行功能 -->
+        <section class="mb-16 section-card rounded-2xl p-6 md:p-8">
+            <h2 class="text-3xl font-bold mb-8 text-emerald-400 border-b border-emerald-400/30 pb-2">行中执行：智能陪伴每一步</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- 电子行程手册 -->
+                <div class="bg-black/20 rounded-xl p-6">
+                    <div class="w-12 h-12 bg-emerald-400/20 rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-white">电子行程手册</h3>
+                    <p class="text-gray-300 text-sm">主界面为「地图模式」，仅高亮当天点位和路线，支持离线查看，无需反复翻找攻略。</p >
+                </div>
+
+                <!-- 智能提醒 -->
+                <div class="bg-black/20 rounded-xl p-6">
+                    <div class="w-12 h-12 bg-emerald-400/20 rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13l-3 3m0 0l-3-3m3 3V5" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-white">智能提醒</h3>
+                    <p class="text-gray-300 text-sm">• 位置提醒：靠近景点时推送“您已靠近武康大楼，可开始寻宝打卡”<br>• 时间提醒：结合实时路况推送“现在出发去下一站，路程约20分钟”</p >
+                </div>
+
+                <!-- 动态调整 -->
+                <div class="bg-black/20 rounded-xl p-6">
+                    <div class="w-12 h-12 bg-emerald-400/20 rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-white">动态调整</h3>
+                    <p class="text-gray-300 text-sm">餐厅排队时，系统自动推荐“附近500米内同类型餐厅”，支持自定义搜索范围（500m/1km/3km）。</p >
+                </div>
+            </div>
+        </section>
+
+        <!-- 第三阶段：绿色激励体系 -->
+        <section class="mb-16 section-card rounded-2xl p-6 md:p-8">
+            <h2 class="text-3xl font-bold mb-8 text-emerald-400 border-b border-emerald-400/30 pb-2">绿色激励：旅行赚钱两不误</h2>
+          
