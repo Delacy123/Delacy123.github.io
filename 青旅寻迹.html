@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>青旅行迹 - AI智能规划+绿色旅行平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+        .section-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        .badge-green {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+        .clickable-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .clickable-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        .toggle-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+        .toggle-content.active {
+            max-height: 1000px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: #1e293b;
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 600px;
+            width: 100%;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #94a3b8;
+            background: none;
+            border: none;
+        }
+        .close-modal:hover {
+            color: white;
+        }
+        .page {
+            display: none;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .page.active {
+            display: block;
+        }
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            z-index: 999;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- 首页 -->
+    <div id="home-page" class="page active">
+        <!-- 头部横幅 -->
+        <header class="relative py-20 px-4 md:px-8 overflow-hidden">
+            <div class="absolute inset-0 bg-black/30 z-0"></div>
+            <div class="absolute inset-0 bg-[url('https://picsum.photos/id/1039/1920/1080')] bg-cover bg-center opacity-40 z-[-1]"></div>
+            <div class="container mx-auto relative z-10 text-center">
+                <h1 class="text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg">青旅行迹</h1>
+                <p class="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto mb-8">AI智能规划 · 游戏化激励 · 一站式绿色旅行</p>
+                <!-- 核心入口：AI规划 + 发现灵感 -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+                    <button id="ai-plan-btn" class="btn-primary text-white font-medium py-3 px-8 rounded-full" data-page="ai-plan-page">
+                        🔍 进入AI智能规划
+                    </button>
+                    <button id="inspire-btn" class="bg-white/10 text-white font-medium py-3 px-8 rounded-full border border-white/20 hover:bg-white/20 transition cursor: pointer" data-page="inspire-page">
+                        📖 发现灵感游记
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 核心内容区 -->
+        <main class="container mx-auto px-4 md:px-8 py-12">
+            <!-- 引言部分 -->
+            <section class="mb-16 text-center max-w-4xl mx-auto">
+                <p class="text-lg md:text-xl text-gray-200">
+                    告别信息爆炸的规划焦虑，青旅行迹用AI为你定制个性化行程，用低碳激励让旅行更有意义——从想法到出发，一站式搞定。
+                </p>
+            </section>
+
+            <!-- 第一阶段：AI规划流程 -->
+            <section class="mb-16 section-card rounded-2xl p-6 md:p-8">
+                <h2 class="text-3xl font-bold mb-8 text-emerald-400 border-b border-emerald-400/30 pb-2">AI智能规划：3步定制专属行程</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- 步骤1：需求输入 -->
+                    <div class="clickable-card bg-black/20 rounded-xl p-6" data-page="ai-plan-page" data-section="step1">
+                        <div class="w-16 h-16 bg-emerald-400/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+                            <span class="text-2xl font-bold text-emerald-400">1</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4 text-white text-center">需求输入</h3>
+                        <ul class="text-gray-300 space-y-2">
+                            <li>• 选择「智能规划」，进入对话界面</li>
+                            <li>• 输入基础需求：目的地、时间、预算、兴趣</li>
+                            <li>• AI精细化追问：偏好风格、住宿需求</li>
+                        </ul>
+                        <div class="text-center mt-4 text-sm text-emerald-400">点击查看示例 →</div>
+                    </div>
+
+                    <!-- 步骤2：方案生成与打磨 -->
+                    <div class="clickable-card bg-black/20 rounded-xl p-6" data-page="ai-plan-page" data-section="step2">
+                        <div class="w-16 h-16 bg-emerald-400/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+                            <span class="text-2xl font-bold text-emerald-400">2</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4 text-white text-center">方案生成与打磨</h3>
+                        <ul class="text-gray-300 space-y-2">
+                            <li>• 10秒内生成2套可视方案</li>
+                            <li>• 地图点选查看详情：评分、实拍图、避坑提示</li>
+                            <li>• 灵活调整：拖拽排序、一键替换、智能填充</li>
+                        </ul>
+                        <div class="text-center mt-4 text-sm text-emerald-400">点击查看示例 →</div>
+                    </div>
+
+                    <!-- 步骤3：确认与预订 -->
+                    <div class="clickable-card bg-black/20 rounded-xl p-6" data-page="ai-plan-page" data-section="step3">
+                        <div class="w-16 h-16 bg-emerald-400/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+                            <span class="text-2xl font-bold text-emerald-400">3</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4 text-white text-center">确认与预订</h3>
+                        <ul class="text-gray-300 space-y-2">
+                            <li>• 查看行程总览：预算分解、时间轴、路线图</li>
+                            <li>• 一站式预订：酒店/机票直接点击“预订”</li>
+                            <li>• 青旅币抵扣：支付时自动显示可抵扣金额</li>
+                        </ul>
+                        <div class="text-center mt-4 text-sm text-emerald-400">点击查看示例 →</div>
+                    </div>
+                </div>
+
+                <!-- 方案示例预览（可展开/折叠） -->
+                <div class="mt-12 bg-black/30 rounded-xl p-6 border border-emerald-400/20">
+                    <div class="flex justify-between items-center cursor-pointer" id="toggle-example">
+                        <h3 class="text-xl font-semibold text-white">上海2天1夜方案示例（文艺漫游版）</h3>
+                        <span class="text-emerald-400">展开 ▼</span>
+                    </div>
+                    <div class="toggle-content mt-4" id="example-content">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <p class="text-gray-300 mb-3"><strong class="text-emerald-400">Day1：文艺咖啡馆+小众街区</strong></p>
+                                <ul class="text-gray-300 space-y-1 text-sm">
+                                    <li>• 10:00 入住「武康路设计民宿」（步行5分钟到武康大楼）</li>
+                                    <li>• 11:00 武康大楼拍照打卡（AI推荐最佳机位）</li>
+                                    <li>• 12:30 「M Stand」咖啡简餐（网红工业风，适合拍照）</li>
+                                    <li>• 14:00 愚园路逛小众文创店+街头艺术展</li>
+                                    <li>• 18:30 「Baker&Spice」晚餐（轻食，露台夜景佳）</li>
+                                </ul>
+                                <p class="text-gray-300 mb-3 mt-6"><strong class="text-emerald-400">Day2：美术馆+滨江漫步</strong></p>
+                                <ul class="text-gray-300 space-y-1 text-sm">
+                                    <li>• 9:30 「龙美术馆（西岸馆）」看展（工业风建筑，江边景观）</li>
+                                    <li>• 12:00 「西岸美术馆食堂」午餐（平价艺术感餐厅）</li>
+                                    <li>• 14:00 西岸滨江步道散步（骑行/拍照均可）</li>
+                                    <li>• 16:30 「Seesaw Coffee」喝手冲（滨江分店，视野好）</li>
+                                    <li>• 18:00 返程</li>
+                                </ul>
+                            </div>
+                            <div class="bg-black/40 rounded-lg p-4 flex items-center justify-center">
+                                <img src="https://picsum.photos/id/1067/600/400" alt="上海文艺路线地图" class="rounded-lg w-full h-auto opacity-80">
+                                <div class="absolute text-sm text-white bg-black/50 px-2 py-1 rounded">
+                                    点击地图点位查看详情（如民宿设施、餐厅评价）
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 第二阶段：行中执行功能 -->
+            <section class="mb-16 section-card rounded-2xl p-6 md:p-8">
+                <h2 class="text-3xl font-bold mb-8 text-emerald-400 border-b border-emerald-400/30 pb-2">行中执行：智能陪伴每一步</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- 电子行程手册 -->
+                    <div class="clickable-card bg-black/20 rounded-xl p-6" data-target="feature1-modal">
+                        <div class="w-12 h-12 bg-emerald-400/20 rounded-full flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3 text-white">电子行程手册</h3>
+                        <p class="text-gray-300 text-sm">主界面为「地图模式」，仅高亮当天点位和路线，支持离线查看，无需反复翻找攻略。</p>
+                    </div>
+
+                    <!-- 智能提醒 -->
+                    <div class="clickable-card bg-black/20 rounded-xl p-6" data-target="feature2-modal">
+                        <div class="w-12 h-12 bg-emerald-400/20 rounded-full flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13l-3 3m0 0l-3-3m3 3V5" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3 text-white">智能提醒</h3>
+                        <p class="text-gray-300 text-sm">• 位置提醒：靠近景点时推送打卡提示<br>• 时间提醒：结合实时路况推送出发建议</p>
+                    </div>
+
+                    <!-- 动态调整 -->
+                    <div class="clickable-card bg-black/20 rounded-xl p-6" data-target="feature3-modal">
+                        <div class="w-12 h-12 bg-emerald-400/20 rounded-full flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3 text-white">动态调整</h3>
+                        <p class="text-gray-300 text-sm">临时想改行程？直接在地图上拖拽点位，AI会自动重新计算路线和时间，无需手动修改。</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- AI规划页面 -->
+    <div id="ai-plan-page" class="page">
+        <button class="back-btn" id="back-to-home">← 返回首页</button>
+        <div class="container mx-auto px-4 md:px-8 py-12">
+            <h1 class="text-3xl font-bold mb-8 text-emerald-400 text-center">AI智能规划助手</h1>
+            
+            <div class="section-card rounded-2xl p-6 md:p-8 mb-12">
+                <div class="flex flex-col md:flex-row gap-8">
+                    <!-- 左侧：AI对话界面 -->
+                    <div class="md:w-1/2 bg-black/30 rounded-xl p-6 h-[500px] flex flex-col">
+                        <div class="mb-4">
+                            <h2 class="text-xl font-semibold text-white">与AI助手对话</h2>
+                            <p class="text-sm text-gray-400">请告诉我你的旅行需求，例如："我想下周末去上海玩2天，预算1500元，喜欢文艺和美食。"</p>
+                        </div>
+                        <div class="flex-grow overflow-y-auto mb-4 space-y-4" id="chat-history">
+                            <!-- 系统消息 -->
+                            <div class="flex items-start">
+                                <div class="w-8 h-8 bg-emerald-400 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                    <span class="text-white font-bold">AI</span>
+                                </div>
+                                <div class="bg-black/50 p-3 rounded-lg text-gray-200">
+                                    你好！我是你的旅行规划助手。请告诉我你的目的地、出行时间、预算和兴趣偏好，我会为你定制完美的行程。
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex">
+                            <input type="text" id="user-input" class="flex-grow bg-black/50 border border-gray-700 rounded-l-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400" placeholder="输入你的旅行需求...">
+                            <button id="send-btn" class="btn-primary px-4 py-2 rounded-r-lg">发送</button>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：行程预览 -->
+                    <div class="md:w-1/2 bg-black/30 rounded-xl p-6 h-[500px] flex flex-col">
+                        <div class="mb-4 flex justify-between items-center">
+                            <h2 class="text-xl font-semibold text-white">行程方案预览</h2>
+                            <button class="text-sm text-emerald-400 hover:underline" id="generate-btn">生成方案</button>
+                        </div>
+                        <div class="flex-grow overflow-y-auto mb-4" id="itinerary-preview">
+                            <div class="flex items-center justify-center h-full text-gray-400">
+                                <p>请输入你的需求并点击"生成方案"，或直接发送消息与AI对话。</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between">
+                            <button class="bg-white/10 text-white px-4 py-2 rounded-lg border border-white/20 hover:bg-white/20 transition">保存草稿</button>
+                            <button class="btn-primary px-4 py-2 rounded-lg">确认并预订</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 步骤详情（默认隐藏） -->
+            <div id="step1-details" class="section-card rounded-2xl p-6 md:p-8 mb-12 hidden">
+                <h2 class="text-2xl font-bold mb-4 text-emerald-400">步骤1：需求输入</h2>
+                <div class="bg-black/30 p-4 rounded-lg mb-4">
+                    <p class="text-gray-200 mb-2">你可以这样和AI沟通：</p>
+                    <p class="text-emerald-300 font-mono">"我想下周末去杭州玩2天，预算2000元，喜欢自然风光和历史古迹。"</p>
+                </div>
+                <p class="text-gray-300">AI会根据你的输入，自动识别关键信息，并可能追问你更具体的偏好，例如住宿标准、交通方式等，以生成更精准的方案。</p>
+            </div>
+
+            <div id="step2-details" class="section-card rounded-2xl p-6 md:p-8 mb-12 hidden">
+                <h2 class="text-2xl font-bold mb-4 text-emerald-400">步骤2：方案生成与打磨</h2>
+                <p class="text-gray-300 mb-4">AI会在10秒内为你生成2套不同风格的行程方案。你可以在预览区查看方案详情，并进行以下操作：</p>
+                <ul class="text-gray-300 space-y-2 mb-4">
+                    <li>• <span class="text-emerald-300">拖拽排序</span>：点击并拖动景点卡片，调整游览顺序。</li>
+                    <li>• <span class="text-emerald-300">一键替换</span>：点击景点卡片上的"替换"按钮，AI会推荐类似的替代选项。</li>
+                    <li>• <span class="text-emerald-300">智能填充</span>：如果某段时间有空档，点击"填充"按钮，AI会自动推荐合适的活动。</li>
+                </ul>
+                <div class="bg-black/30 p-4 rounded-lg">
+                    <p class="text-gray-200 mb-2">你也可以继续和AI对话来调整方案：</p>
+                    <p class="text-emerald-300 font-mono">"第二天下午想加一个咖啡馆，离美术馆近一点的。"</p>
+                </div>
+            </div>
+
+            <div id="step3-details" class="section-card rounded-2xl p-6 md:p-8 mb-12 hidden">
+                <h2 class="text-2xl font-bold mb-4 text-emerald-400">步骤3：确认与预订</h2>
+                <p class="text-gray-300 mb-4">当你对行程方案满意后，可以点击"确认并预订"按钮，进入预订流程：</p>
+                <ul class="text-gray-300 space-y-2 mb-4">
+                    <li>• 系统会生成一份详细的行程总览，包含每日时间轴、路线地图和预算分解。</li>
+                    <li>• 你可以点击方案中的酒店、机票等项目，直接跳转到合作平台进行预订。</li>
+                    <li>• 预订时，系统会自动计算你可使用的"青旅币"抵扣金额，为你省钱。</li>
+                </ul>
+                <div class="bg-black/30 p-4 rounded-lg">
+                    <p class="text-gray-200">预订完成后，你会收到确认短信和邮件，同时行程会同步到你的"电子行程手册"中，方便你在旅行中随时查看。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 灵感游记页面 -->
+    <div id="inspire-page" class="page">
+        <button class="back-btn" id="back-to-home-2">← 返回首页</button>
+        <div class="container mx-auto px-4 md:px-8 py-12">
+            <h1 class="text-3xl font-bold mb-8 text-emerald-400 text-center">发现灵感游记</h1>
+            
+            <!-- 搜索和筛选 -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                <div class="relative w-full md:w-1/2 mb-4 md:mb-0">
+                    <input type="text" class="w-full bg-black/30 border border-gray-700 rounded-lg px-4 py-2 pl-10 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400" placeholder="搜索目的地、主题或标签...">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button class="bg-emerald-400 text-white px-4 py-2 rounded-lg text-sm">全部</button>
+                    <button class="bg-black/30 border border-gray-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-black/50">文艺清新</button>
+                    <button class="bg-black/30 border border-gray-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-black/50">户外探险</button>
+                    <button class="bg-black/30 border border-gray-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-black/50">美食探店</button>
+                    <button class="bg-black/30 border border-gray-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-black/50">亲子家庭</button>
+                </div>
+            </div>
+
+            <!-- 游记卡片列表 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 游记卡片1 -->
+                <div class="clickable-card bg-black/30 rounded-xl overflow-hidden">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://picsum.photos/id/1036/600/400" alt="云南大理游记封面" class="w-full h-full object-cover transition-transform hover:scale-105">
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-xl font-semibold text-white">大理7天慢生活：从古城到洱海的治愈之旅</h3>
+                            <span class="badge-green px-2 py-1 rounded-full text-xs">文艺清新</span>
+                        </div>
+                        <p class="text-gray-300 text-sm mb-4">告别城市喧嚣，在大理的蓝天白云下，体验一场说走就走的治愈之旅。</p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <img src="https://picsum.photos/id/1005/100/100" alt="作者头像" class="w-8 h-8 rounded-full mr-2">
+                                <span class="text-sm text-gray-400">旅行家小A</span>
+                            </div>
+                            <span class="text-sm text-gray-400">阅读量 2.4k</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 游记卡片2 -->
+                <div class="clickable-card bg-black/30 rounded-xl overflow-hidden">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://picsum.photos/id/1061/600/400" alt="四川成都游记封面" class="w-full h-full object-cover transition-transform hover:scale-105">
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-xl font-semibold text-white">成都3天吃逛指南：从火锅到茶馆的巴适生活</h3>
+                            <span class="badge-green px-2 py-1 rounded-full text-xs">美食探店</span>
+                        </div>
+                        <p class="text-gray-300 text-sm mb-4">跟着本地人吃遍成都，打卡地道火锅店、串串香和百年茶馆。</p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <img src="https://picsum.photos/id/1006/100/100" alt="作者头像" class="w-8 h-8 rounded-full mr-2">
+                                <span class="text-sm text-gray-400">吃货小明</span>
+                            </div>
+                            <span class="text-sm text-gray-400">阅读量 3.1k</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 游记卡片3 -->
+                <div class="clickable-card bg-black/30 rounded-xl overflow-hidden">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://picsum.photos/id/1015/600/400" alt="新疆喀纳斯游记封面" class="w-full h-full object-cover transition-transform hover:scale-105">
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-xl font-semibold text-white">喀纳斯徒步攻略：闯入上帝的调色盘</h3>
+                            <span class="badge-green px-2 py-1 rounded-full text-xs">户外探险</span>
+                        </div>
+                        <p class="text-gray-300 text-sm mb-4">详细的喀纳斯徒步路线规划，带你领略秋天的童话世界。</p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <img src="https://picsum.photos/id/1012/100/100" alt="作者头像" class="w-8 h-8 rounded-full mr-2">
+                                <span class="text-sm text-gray-400">徒步爱好者</span>
+                            </div>
+                            <span class="text-sm text-gray-400">阅读量 1.8k</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 游记卡片4 -->
+                <div class="clickable-card bg-black/30 rounded-xl overflow-hidden">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://picsum.photos/id/1025/600/400" alt="浙江杭州游记封面" class="w-full h-full object-cover transition-transform hover:scale-105">
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-xl font-semibold text-white">杭州2天1夜：西湖泛舟与灵隐禅意</h3>
+                            <span class="badge-green px-2 py-1 rounded-full text-xs">文艺清新</span>
+                        </div>
+                        <p class="text-gray-300 text-sm mb-4">感受江南水乡的韵味，在西湖边散步，在灵隐寺静心。</p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <img src="https://picsum.photos/id/1003/100/100" alt="作者头像" class="w-8 h-8 rounded-full mr-2">
+                                <span class="text-sm text-gray-400">江南烟雨</span>
+                            </div>
+                            <span class="text-sm text-gray-400">阅读量 1.5k</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 游记卡片5 -->
+                <div class="clickable-card bg-black/30 rounded-xl overflow-hidden">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://picsum.photos/id/1043/600/400" alt="广东珠海游记封面" class="w-full h-full object-cover transition-transform hover:scale-105">
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-xl font-semibold text-white">珠海亲子游：长隆海洋王国欢乐行</h3>
+                            <span class="badge-green px-2 py-1 rounded-full text-xs">亲子家庭</span>
+                        </div>
+                        <p class="text-gray-300 text-sm mb-4">带娃玩转长隆海洋王国，看企鹅、海豚表演，度过一个欢乐的周末。</p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <img src="https://picsum.photos/id/1001/100/100" alt="作者头像" class="w-8 h-8 rounded-full mr-2">
+                                <span class="text-sm text-gray-400">宝妈莉莉</span>
+                            </div>
+                            <span class="text-sm text-gray-400">阅读量 2.7k</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 游记卡片6 -->
+                <div class="clickable-card bg-black/30 rounded-xl overflow-hidden">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://picsum.photos/id/1054/600/400" alt="陕西西安游记封面" class="w-full h-full object-cover transition-transform hover:scale-105">
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-xl font-semibold text-white">西安4天3夜：穿越千年的历史之旅</h3>
+                            <span class="badge-green px-2 py-1 rounded-full text-xs">历史文化</span>
+                        </div>
+                        <p class="text-gray-300 text-sm mb-4">游览兵马俑、古城墙、大雁塔，感受十三朝古都的魅力。</p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <img src="https://picsum.photos/id/1009/100/100" alt="作者头像" class="w-8 h-8 rounded-full mr-2">
+                                <span class="text-sm text-gray-400">历史系学生</span>
+                            </div>
+                            <span class="text-sm text-gray-400">阅读量 2.1k</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 加载更多 -->
+            <div class="text-center mt-12">
+                <button class="btn-primary text-white font-medium py-3 px-8 rounded-full">加载更多游记</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 功能模态框 -->
+    <div id="feature1-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <h2 class="text-2xl font-bold mb-4 text-emerald-400">电子行程手册</h2>
+            <p class="text-gray-300 mb-4">行中执行的核心工具，为你提供无缝的旅行体验。</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="bg-black/30 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2 text-white">地图模式</h3>
+                    <p class="text-sm text-gray-400">主界面以地图为核心，直观显示当天所有行程点位和路线，让你对行程一目了然。</p>
+                </div>
+                <div class="bg-black/30 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2 text-white">离线查看</h3>
+                    <p class="text-sm text-gray-400">提前下载离线包，即使在没有网络的偏远地区，也能随时查看行程详情。</p>
+                </div>
+                <div class="bg-black/30 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2 text-white">一键导航</h3>
+                    <p class="text-sm text-gray-400">点击任意点位，可直接跳转至高德地图或百度地图进行导航，无需手动输入地址。</p>
+                </div>
+                <div class="bg-black/30 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2 text-white">行程分享</h3>
+                    <p class="text-sm text-gray-400">支持将行程生成链接分享给同行伙伴，方便大家协同查看和调整。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="feature2-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <h2 class="text-2xl font-bold mb-4 text-emerald-400">智能提醒</h2>
+            <p class="text-gray-300 mb-4">基于你的实时位置和时间，为你提供贴心的行程提醒。</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="bg-black/30 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2 text-white">位置提醒</h3>
+                    <p class="text-sm text-gray-400">当你靠近某个景点或餐厅时，系统会自动推送打卡提示和相关信息。</p>
+                </div>
+                <div class="bg-black/30 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2 text-white">时间提醒</h3>
+                    <p class="text-sm text-gray-400">结合实时路况和交通方式，提前提醒你该出发前往下一个目的地了。</p>
+                </div>
+                <div class="bg-black/30 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2 text-white">景点开放时间提醒</h3>
+                    <p class="text-sm text-gray-400">根据你的行程安排，提醒你景点的开放和关闭时间，避免白跑一趟。</p>
+                </div>
+                <div class="bg-black/30 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2 text-white">天气提醒</h3>
+                    <p class="text-sm text-gray-400">提前推送目的地的天气情况，并给出穿衣和出行建议。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="feature3-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <h2 class="text-2xl font-bold mb-4 text-emerald-400">动态调整</h2>
+            <p class="text-gray-300 mb-4">旅行计划赶不上变化？动态调整功能让你轻松应对突发情况。</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="bg-black/30 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2 text-white">拖拽调整顺序</h3>
+                    <p class="text-sm text-gray-400">在地图或时间轴上，直接拖拽景点卡片即可调整游览顺序，操作直观简单。</p>
+                </div>
+                <div class="bg-black/30 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2 text-white">智能路线重算</h3>
+                    <p class="text-sm text-gray-400">调整顺序后，系统会自动重新计算最优路线和预计耗时，确保行程合理。</p>
+                </div>
+                <div class="bg-black/30 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2 text-white">一键替换</h3>
+                    <p class="text-sm text-gray-400">不想去某个景点了？点击"替换"，AI会根据你的兴趣和当前位置推荐类似选项。</p>
+                </div>
+                <div class="bg-black/30 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2 text-white">时间空档填充</h3>
+                    <p class="text-sm text-gray-400">行程中有空闲时间？点击"填充"，AI会自动推荐附近的咖啡馆、小吃店或小众景点。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 页面跳转功能
+            const pageButtons = document.querySelectorAll('[data-page]');
+            const backButtons = document.querySelectorAll('.back-btn');
+            const pages = document.querySelectorAll('.page');
+            let pageHistory = ['home-page']; // 记录页面历史，初始为首页
+
+            // 处理所有带data-page属性的按钮点击
+            pageButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetPageId = this.getAttribute('data-page');
+                    const targetSectionId = this.getAttribute('data-section');
+
+                    // 隐藏所有页面
+                    pages.forEach(page => page.classList.remove('active'));
+
+                    // 显示目标页面
+                    const targetPage = document.getElementById(targetPageId);
+                    if (targetPage) {
+                        targetPage.classList.add('active');
+                        // 将目标页面加入历史记录
+                        pageHistory.push(targetPageId);
+                    }
+
+                    // 如果有指定section，显示它并隐藏其他sections
+                    if (targetSectionId) {
+                        const sections = document.querySelectorAll('[id$="-details"]');
+                        sections.forEach(section => section.classList.add('hidden'));
+                        
+                        const targetSection = document.getElementById(targetSectionId + '-details');
+                        if (targetSection) {
+                            targetSection.classList.remove('hidden');
+                            // 滚动到该section
+                            targetSection.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }
+                });
+            });
+
+            // 处理返回按钮点击
+            backButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (pageHistory.length > 1) {
+                        // 移除当前页面
+                        pageHistory.pop();
+                        // 获取上一个页面ID
+                        const prevPageId = pageHistory[pageHistory.length - 1];
+
+                        // 隐藏所有页面
+                        pages.forEach(page => page.classList.remove('active'));
+
+                        // 显示上一个页面
+                        const prevPage = document.getElementById(prevPageId);
+                        if (prevPage) {
+                            prevPage.classList.add('active');
+                        }
+                    }
+                });
+            });
+
+            // 方案示例展开/折叠
+            const toggleExampleBtn = document.getElementById('toggle-example');
+            const exampleContent = document.getElementById('example-content');
+            const toggleIcon = toggleExampleBtn.querySelector('span');
+
+            if (toggleExampleBtn && exampleContent && toggleIcon) {
+                toggleExampleBtn.addEventListener('click', function() {
+                    exampleContent.classList.toggle('active');
+                    if (exampleContent.classList.contains('active')) {
+                        toggleIcon.textContent = '收起 ▲';
+                    } else {
+                        toggleIcon.textContent = '展开 ▼';
+                    }
+                });
+            }
+
+            // 模态框功能
+            const modalTriggers = document.querySelectorAll('[data-target]');
+            const modals = document.querySelectorAll('.modal');
+            const closeButtons = document.querySelectorAll('.close-modal');
+
+            // 打开模态框
+            modalTriggers.forEach(trigger => {
+                trigger.addEventListener('click', function() {
+                    const targetModalId = this.getAttribute('data-target');
+                    const targetModal = document.getElementById(targetModalId);
+                    if (targetModal) {
+                        targetModal.classList.add('active');
+                    }
+                });
+            });
+
+            // 关闭模态框
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const modal = this.closest('.modal');
+                    if (modal) {
+                        modal.classList.remove('active');
+                    }
+                });
+            });
+
+            // 点击模态框外部关闭
+            modals.forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.classList.remove('active');
+                    }
+                });
+            });
+
+            // AI规划页面的生成方案按钮
+            const generateBtn = document.getElementById('generate-btn');
+            const itineraryPreview = document.getElementById('itinerary-preview');
+
+            if (generateBtn && itineraryPreview) {
+                generateBtn.addEventListener('click', function() {
+                    // 模拟生成方案
+                    itineraryPreview.innerHTML = `
+                        <div class="bg-black/50 p-4 rounded-lg mb-4">
+                            <h3 class="text-lg font-semibold text-emerald-400 mb-2">上海2天1夜 · 文艺漫游方案</h3>
+                            <p class="text-sm text-gray-400 mb-3">预算：约1500元 / 人 | 适合：2人同行 | 风格：文艺、小众、美食</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="bg-black/30 p-3 rounded-lg">
+                                <h4 class="font-semibold text-white mb-2">Day 1</h4>
+                                <ul class="text-sm text-gray-300 space-y-2">
+                                    <li class="flex">
+                                        <span class="w-24 text-gray-400">10:00</span>
+                                        <span>入住「武康路设计民宿」</span>
+                                    </li>
+                                    <li class="flex">
+                                        <span class="w-24 text-gray-400">11:00</span>
+                                        <span>武康大楼拍照打卡（AI推荐最佳机位）</span>
+                                    </li>
+                                    <li class="flex">
+                                        <span class="w-24 text-gray-400">12:30</span>
+                                        <span>「M Stand」咖啡简餐</span>
+                                    </li>
+                                    <li class="flex">
+                                        <span class="w-24 text-gray-400">14:00</span>
+                                        <span>愚园路逛小众文创店+街头艺术展</span>
+                                    </li>
+                                    <li class="flex">
+                                        <span class="w-24 text-gray-400">18:30</span>
+                                        <span>「Baker&Spice」晚餐（露台夜景佳）</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="bg-black/30 p-3 rounded-lg">
+                                <h4 class="font-semibold text-white mb-2">Day 2</h4>
+                                <ul class="text-sm text-gray-300 space-y-2">
+                                    <li class="flex">
+                                        <span class="w-24 text-gray-400">09:30</span>
+                                        <span>「龙美术馆（西岸馆）」看展</span>
+                                    </li>
+                                    <li class="flex">
+                                        <span class="w-24 text-gray-400">12:00</span>
+                                        <span>「西岸美术馆食堂」午餐</span>
+                                    </li>
+                                    <li class="flex">
+                                        <span class="w-24 text-gray-400">14:00</span>
+                                        <span>西岸滨江步道散步</span>
+                                    </li>
+                                    <li class="flex">
+                                        <span class="w-24 text-gray-400">16:30</span>
+                                        <span>「Seesaw Coffee」喝手冲（滨江分店）</span>
+                                    </li>
+                                    <li class="flex">
+                                        <span class="w-24 text-gray-400">18:00</span>
+                                        <span>返程</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // AI聊天功能
+            const userInput = document.getElementById('user-input');
+            const sendBtn = document.getElementById('send-btn');
+            const chatHistory = document.getElementById('chat-history');
+
+            if (userInput && sendBtn && chatHistory) {
+                // 发送消息函数
+                function sendMessage() {
+                    const message = userInput.value.trim();
+                    if (!message) return;
+
+                    // 添加用户消息到聊天记录
+                    const userMessageHTML = `
+                        <div class="flex items-start justify-end">
+                            <div class="bg-emerald-400/20 p-3 rounded-lg text-gray-200 max-w-[80%]">
+                                ${message}
+                            </div>
+                            <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center ml-3 flex-shrink-0">
+                                <span class="text-white font-bold">你</span>
+                            </div>
+                        </div>
+                    `;
+                    chatHistory.insertAdjacentHTML('beforeend', userMessageHTML);
+
+                    // 清空输入框
+                    userInput.value = '';
+
+                    // 滚动到底部
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
+
+                    // 模拟AI回复
+                    setTimeout(() => {
+                        const aiResponse = getAIResponse(message);
+                        const aiMessageHTML = `
+                            <div class="flex items-start">
+                                <div class="w-8 h-8 bg-emerald-400 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                    <span class="text-white font-bold">AI</span>
+                                </div>
+                                <div class="bg-black/50 p-3 rounded-lg text-gray-200 max-w-[80%]">
+                                    ${aiResponse}
+                                </div>
+                            </div>
+                        `;
+                        chatHistory.insertAdjacentHTML('beforeend', aiMessageHTML);
+                        chatHistory.scrollTop = chatHistory.scrollHeight;
+                    }, 1000);
+                }
+
+                // 点击发送按钮
+                sendBtn.addEventListener('click', sendMessage);
+
+                // 按Enter键发送
+                userInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
+
+            // 简单的AI回复逻辑
+            function getAIResponse(userMessage) {
+                const lowerMessage = userMessage.toLowerCase();
+                
+                if (lowerMessage.includes('上海') && (lowerMessage.includes('玩') || lowerMessage.includes('旅行') || lowerMessage.includes('行程'))) {
+                    return "好的，上海是一个充满现代与历史交融的城市。你计划玩几天？有什么特别感兴趣的吗，比如美食、艺术展览还是历史景点？";
+                } else if (lowerMessage.includes('预算')) {
+                    return "了解预算对规划行程很重要。你大概的预算范围是多少呢？这样我可以为你推荐合适的住宿和餐饮选项。";
+                } else if (lowerMessage.includes('时间') || lowerMessage.includes('什么时候')) {
+                    return "旅行时间会影响行程安排，比如季节、节假日等。你计划什么时候出发呢？是周末短途还是长假旅行？";
+                } else if (lowerMessage.includes('文艺') || lowerMessage.includes('小众')) {
+                    return "看来你喜欢文艺小众的风格！上海有很多这样的地方，比如武康路、愚园路、西岸艺术区等。我可以为你定制一份文艺漫游路线，需要吗？";
+                } else if (lowerMessage.includes('美食') || lowerMessage.includes('吃')) {
+                    return "上海的美食非常丰富，从本帮菜到各国料理都有。你喜欢吃什么类型的食物？或者有没有特别想尝试的餐厅？";
+                } else if (lowerMessage.includes('生成') || lowerMessage.includes('方案')) {
+                    return "好的，我已经了解了你的基本需求。我将为你生成一份上海2天1夜的文艺漫游方案，请点击右侧的'生成方案'按钮查看详情。";
+                } else {
+                    return "谢谢你的分享！为了给你更好的建议，你可以告诉我你的具体旅行需求，比如目的地、时间、预算和兴趣爱好等信息。";
+                }
+            }
+        });
+    </script>
+</body>
+</html>
